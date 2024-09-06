@@ -32,3 +32,10 @@
 ```
 
 <p>O bot buscará o item e fornecerá o link direto para a página no <a href="https://www.wowhead.com">WoWHead</a>.</p>
+
+<h2>🤝 Contribuições</h2> 
+
+<p>Contribuições são bem-vindas! Sinta-se à vontade para abrir uma <strong>issue</strong> ou enviar um <strong>pull request</strong>.</p>
+
+<p align="center"><strong>Made with ❤️ by Ruan Gonzalez</strong></p>
+

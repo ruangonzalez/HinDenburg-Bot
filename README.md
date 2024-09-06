@@ -37,5 +37,9 @@
 
 <p>Contribuições são bem-vindas! Sinta-se à vontade para abrir uma <strong>issue</strong> ou enviar um <strong>pull request</strong>.</p>
 
+<h2>📝 Licença</h2>
+
+<p>Este projeto está licenciado sob a <strong>MIT License</strong>. Consulte o arquivo <code>LICENSE</code> para mais detalhes.</p>
+
 <p align="center"><strong>Made with ❤️ by Ruan Gonzalez</strong></p>
 

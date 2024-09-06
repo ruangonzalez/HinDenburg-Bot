@@ -21,14 +21,14 @@
 
 <ol>
   <li>Adicione o bot ao seu servidor Discord.</li>
-  <li>Use o comando <code>/pesquisar [nome_do_item]</code> para procurar o item desejado.</li>
+  <li>Use o comando <code>/wiki [nome_do_item]</code> para procurar o item desejado.</li>
   <li>O bot retornará o link do item correspondente no <strong>WoWHead</strong>.</li>
 </ol>
 
 <h3>🔍 Exemplo de Comando</h3>
 
 ```bash
-/pesquisar Suco de Lunamora
+/wiki Suco de Lunamora
 ```
 
 <p>O bot buscará o item e fornecerá o link direto para a página no <a href="https://www.wowhead.com">WoWHead</a>.</p>

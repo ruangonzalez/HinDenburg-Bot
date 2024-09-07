@@ -1,6 +1,5 @@
 import discord
-from discord.ext import commands
-from discord import app_commands
+from discord.ext import commands, tasks
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -21,10 +20,16 @@ client = discord.Client(intents=intents)
 client = commands.Bot(command_prefix='!',intents=intents)
 
 
+@tasks.loop(seconds=60)
+async def heartbeat():
+    print("ainda vivo...")
+
 @client.event
 async def on_ready():
     
     print(f'{client.user} energizado e pronto para servir')
+    
+    heartbeat.start()
     
     channel = client.get_user(925356567832977418)
     await channel.send('to online beiçatron')
@@ -67,27 +72,29 @@ async def wiki(interact:discord.Interaction, search: str):
 
     try:
        
-        wait = WebDriverWait(driver, 10)
+        wait = WebDriverWait(driver, 5)
         
+        link = None
         for i in range(0,6):
             try:
-                
                 element = wait.until(EC.presence_of_element_located((By.CLASS_NAME, f'q{i}.listview-cleartext')))
-                link = element.get_attribute('href')
-                print(f"Link encontrado para q{i}: {link}")
-                break
-            
+                if element:
+                    link = element.get_attribute('href')
+                    print(f"Link encontrado para q{i}: {link}")
+                    break
             except:
                 print(f"Elemento não encontrado para q{i}")
                 
-        await interact.followup.send(f"Aqui está o link da wiki: " + link)
+        if link: 
+            await interact.followup.send(f"Aqui está o link da wiki: " + link)
+        else:
+            await interact.followup.send(f"Não foi possível encontrar o link da wiki para {pesquisa}. Talvez você tenha digitado errado?")
     
     except Exception as e:
-       
-        print(f"Erro: {e}")
-    
+         print(f"Erro: {e}")
+         await interact.followup.send("Ocorreu um erro ao tentar realizar a pesquisa. Tente novamente mais tarde.")
+   
     finally:
-       
         driver.quit()
     
 client.run(discord_token)

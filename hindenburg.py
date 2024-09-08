@@ -1,24 +1,18 @@
 import discord
 from discord.ext import commands, tasks
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.service import Service
+from bs4 import BeautifulSoup
+import requests
+import json
+import re
 
 with open ('token.txt','r') as f:
     discord_token = f.readline()
-
 
 intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 
-client = discord.Client(intents=intents)
 client = commands.Bot(command_prefix='!',intents=intents)
-
 
 @tasks.loop(seconds=60)
 async def heartbeat():
@@ -32,7 +26,8 @@ async def on_ready():
     heartbeat.start()
     
     channel = client.get_user(925356567832977418)
-    await channel.send('to online beiçatron')
+    await channel.send(':robot: **ENERGIZADO E PRONTO PARA SERVIR** :robot:')
+    await channel.send('https://tenor.com/view/goblin-world-of-warcraft-dance-gif-15507982')
     
 @client.command()
 async def sincronizar(ctx:commands.Context):
@@ -52,49 +47,147 @@ async def on_message(message):
     
    if client.user in message.mentions:
        
-        await message.channel.send("oi")
+        await message.channel.send("Olá, qual item quer pesquisar hoje? Digite '/wiki <item>' para pesquisar!")
         
    else:
        
         await client.process_commands(message)
-    
+@client.tree.command(description="só o passinho do gauchinho")
+async def passinho(interact:discord.Interaction):
+    await interact.response.send_message('https://tenor.com/view/goblin-world-of-warcraft-dance-gif-15507982')
+
 @client.tree.command(description="pesquisa no WoWHead sobre o >item< que você deseja.")
 async def wiki(interact:discord.Interaction, search: str):
     await interact.response.defer()
     
     pesquisa = search.replace(' ', '+')
-    
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-    
-    driver.get(f'https://www.wowhead.com/pt/search?q={pesquisa}')
+    url = f'https://www.wowhead.com/pt/search?q={pesquisa}'
 
     try:
-       
-        wait = WebDriverWait(driver, 5)
+        response = requests.get(url)
+        response.raise_for_status()
+        
+        soup = BeautifulSoup(response.text, 'html.parser')
+        print("Página carregada")
+        script = soup.find('script', string=re.compile('WH.SearchPage.showTopResults'))
         
         link = None
-        for i in range(0,6):
-            try:
-                element = wait.until(EC.presence_of_element_located((By.CLASS_NAME, f'q{i}.listview-cleartext')))
-                if element:
-                    link = element.get_attribute('href')
-                    print(f"Link encontrado para q{i}: {link}")
-                    break
-            except:
-                print(f"Elemento não encontrado para q{i}")
+        
+        if script: 
+            script_text = script.string
+            
+            try:  
+                          
+                json_text = re.search(r'\[.*?\]', script_text)
+                if json_text:
+                    json_string = json_text.group(0)
+                    
+                    # print(f"JSON encontrado: {json_string}")
+                    
+                    open_braces = 0
+                    open_brackets = 0 
+                    
+                    for char in json_string:
+                        
+                        if char == '[':
+                            open_brackets += 1
+                        elif char == ']':
+                            open_brackets -= 1
+                        elif char == '{':
+                            open_braces += 1
+                        elif char == '}':
+                            open_braces -= 1
+                    
+                    if open_brackets > open_braces:
+                        if open_brackets - open_braces == 1:
+                            
+                            json_string += '}' * open_braces
+                            json_string += ']' * open_brackets
+                            
+                        else:
+                            
+                            json_string += ']' * (open_brackets - 1)
+                            json_string += '}' * open_braces
+                            json_string += ']'
+                            
+                    elif open_braces > open_brackets:
+                        if open_brackets == 1:
+                            
+                            json_string += '}' * open_braces
+                            json_string += ']' * open_brackets
+                            
+                        else:
+                            
+                            json_string += ']' * (open_brackets - 1)
+                            json_string += '}' * open_braces
+                            json_string += ']'
+                    else: 
+                        
+                        json_string += ']' * (open_brackets - 1)
+                        json_string += '}' * open_braces
+                        json_string += ']'
+                                                               
+                    # print(f"JSON corrigido: {json_string}")
+                    
+                    try:
+                        items = json.loads(json_string)
+                        item_found = False
+                        
+                        for item in items:
+                            
+                            item_name = item.get('lvjson', {}).get('name', '')
+                            if search.lower() in item_name.lower():
+                                
+                                item_id = item['typeId']
+                                item_name = item['lvjson']['name']
+                                url = f'https://www.wowhead.com/pt/item={item_id}/{item_name.replace(" ", "-").lower()}'
+                                print(f"Link encontrado para {item_name}: {url}")
+                                await interact.followup.send(f"Link encontrado para {item_name}: {url}")
+                                item_found = True
+                                break
+                            
+                            elif search.lower() in item_name.lower():
+                                
+                                try:
+                                    
+                                    item_id = item['typeId']
+                                    item_name = pesquisa
+                                    url = f'https://www.wowhead.com/pt/item={item_id}/{item_name.replace(" ", "-").lower()}'
+                                    await interact.followup.send(f"Link encontrado para {item_name}: {url}")
+                                    item_found = True
+                                    break
+                                
+                                except:
+                                        print(f'Item {search} não encontrado.')
+                                        await interact.followup.send(f'Item {search} não encontrado.')
+                            
+                        if not item_found:
+                            try:
+                                    
+                                    item_id = item['typeId']
+                                    item_name = pesquisa
+                                    url = f'https://www.wowhead.com/pt/item={item_id}/{item_name.replace(" ", "-").lower()}'
+                                    await interact.followup.send(f"Link encontrado para {search}: {url}")
+                                    item_found = True
+                                    
+                                
+                            except:
+                                    print(f'Item {search} não encontrado.')
+                                    await interact.followup.send(f'Item {search} não encontrado.')
                 
-        if link: 
-            await interact.followup.send(f"Aqui está o link da wiki: " + link)
+                    except json.JSONDecodeError as e:
+                        print(f"Erro ao decodificar JSON: {e}")
+                        await interact.followup.send('Erro ao processar dados.')
+                        
+            except Exception as e:
+                print(f"Erro geral: {e}")
+                await interact.followup.send('Erro ao processar dados.') 
         else:
-            await interact.followup.send(f"Não foi possível encontrar o link da wiki para {pesquisa}. Talvez você tenha digitado errado?")
-    
-    except Exception as e:
-         print(f"Erro: {e}")
-         await interact.followup.send("Ocorreu um erro ao tentar realizar a pesquisa. Tente novamente mais tarde.")
-   
-    finally:
-        driver.quit()
-    
+            print(f'Item {search} não encontrado.')
+            await interact.followup.send(f'Item {search} não encontrado.')
+            
+    except requests.RequestException as e:
+        print(f"Erro na requisição: {e}")
+        await interact.followup.send('Erro ao carregar página.')            
+        
 client.run(discord_token)

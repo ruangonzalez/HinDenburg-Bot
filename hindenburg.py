@@ -39,8 +39,7 @@ async def sincronizar(ctx:commands.Context):
         
     else:
         
-        await ctx.reply('voce nao pode faze essa merda')
-        await ctx.reply('nois vai te mata')
+        await ctx.reply('Apenas o Desenvolvedor tem permissão para sincronizar comandos.')
 
 @client.event
 async def on_message(message):

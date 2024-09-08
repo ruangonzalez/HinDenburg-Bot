@@ -11,7 +11,6 @@
 <ul>
   <li>Pesquisa rápida de itens no <strong>WoWHead</strong>.</li>
   <li>Retorna o link direto do item pesquisado.</li>
-  <li>Suporte a diferentes raridades de itens (q1 a q5).</li>
   <li>Totalmente integrado ao seu servidor <strong>Discord</strong>.</li>
 </ul>
 
